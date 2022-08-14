@@ -21,7 +21,7 @@
         "resources/*"
       ],
       "@admin/*": [
-        "resources/ts/admin/*"
+        "resources/scripts/admin/*"
       ]
     }
   },

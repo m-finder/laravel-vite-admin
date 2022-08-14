@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Laravel</title>
-        @vite('resources/ts/admin.ts')
+        @vite('resources/scripts/admin.ts')
     </head>
     <body>
         <div id="app"></div>

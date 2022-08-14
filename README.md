@@ -2,8 +2,19 @@
 
 laravel9 + vite + vue3 typescript SPA版基础整合
 
-自用，目前无任何业务逻辑
+目前无任何业务逻辑
 
-开新项目用到时可能会加上权限控制，到时候再说
+完善中...
+
+#### 完善进度
+- [x] 登陆模块
+- [ ] 权限控制
+- [ ] 后台路由列表
+
+#### 注意事项
+
+>Services/Tencent/SmsService 中的模版 code 需要根据实际情况替换
+
+#### 鸣谢
 
 前端框架来自 [[vue-next-admin]](https://gitee.com/lyt-top/vue-next-admin)

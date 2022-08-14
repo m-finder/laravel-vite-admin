@@ -1,15 +1,17 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vuePlugin from '@vitejs/plugin-vue';
 import fs from 'fs';
 import {resolve} from 'path';
 import {homedir} from 'os';
 
-let host = 'laravel9.test';
+let host = loadEnv('', './', 'APP_URL')
+    .APP_URL.replace('https://', '')
+    .replace('http://', '');
 
-function detectServerConfig(host) {
-    let keyPath = resolve(homedir(), `.config/valet/Certificates/${host}.key`)
-    let certificatePath = resolve(homedir(), `.config/valet/Certificates/${host}.crt`)
+function detectServerConfig(host: string) {
+    let keyPath = resolve(homedir(), loadEnv('', './', 'VITE_KEY_PATH').VITE_KEY_PATH)
+    let certificatePath = resolve(homedir(), loadEnv('', './', 'VITE_CERT_PATH').VITE_CERT_PATH)
 
     if (!fs.existsSync(keyPath)) {
         return {}
@@ -33,7 +35,7 @@ export default defineConfig({
     server: detectServerConfig(host),
     plugins: [
         laravel({
-            input: ['resources/ts/admin.ts'],
+            input: ['resources/scripts/admin.ts'],
             refresh: true,
         }),
         vuePlugin({
@@ -47,8 +49,8 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': '/resources/ts',
-            '@admin': '/resources/ts/admin',
+            '@': '/resources/scripts',
+            '@admin': '/resources/scripts/admin',
         },
     },
 });
