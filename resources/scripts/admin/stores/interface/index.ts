@@ -5,9 +5,8 @@
 
 // 用户信息
 export interface UserInfosState {
-	authBtnList: string[];
+	authList: string[];
 	photo: string;
-	roles: string[];
 	time: number;
 	userName: string;
 }
@@ -79,7 +78,6 @@ export interface ThemeConfigState {
 	columnsAsideStyle: string;
 	columnsAsideLayout: string;
 	layout: string;
-	isRequestRoutes: boolean;
 	globalTitle: string;
 	globalViceTitle: string;
 	globalCompanyName: string;

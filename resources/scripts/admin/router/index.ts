@@ -9,10 +9,8 @@ import { useThemeConfig } from '@admin/stores/themeConfig';
 import { Session } from '@admin/utils/storage';
 import { staticRoutes } from '@admin/router/route';
 import { initFrontEndControlRoutes } from '@admin/router/frontEnd';
-import { initBackEndControlRoutes } from '@admin/router/backEnd';
-
 /**
- * 1、前端控制路由时：isRequestRoutes 为 false，需要写 roles，需要走 setFilterRoute 方法。
+ * 1、前端控制路由时：isRequestRoutes 为 false，需要走 setFilterRoute 方法。
  * 2、后端控制路由时：isRequestRoutes 为 true，不需要写 roles，不需要走 setFilterRoute 方法），
  * 相关方法已拆解到对应的 `backEnd.ts` 与 `frontEnd.ts`（他们互不影响，不需要同时改 2 个文件）。
  * 特别说明：
@@ -23,7 +21,6 @@ import { initBackEndControlRoutes } from '@admin/router/backEnd';
 // 读取 `/src/stores/themeConfig.ts` 是否开启后端控制路由配置
 const storesThemeConfig = useThemeConfig(pinia);
 const { themeConfig } = storeToRefs(storesThemeConfig);
-const { isRequestRoutes } = themeConfig.value;
 
 /**
  * 创建一个可以被 Vue 应用程序使用的路由实例
@@ -104,17 +101,10 @@ router.beforeEach(async (to, from, next) => {
 			const storesRoutesList = useRoutesList(pinia);
 			const { routesList } = storeToRefs(storesRoutesList);
 			if (routesList.value.length === 0) {
-				if (isRequestRoutes) {
-					// 后端控制路由：路由数据初始化，防止刷新时丢失
-					await initBackEndControlRoutes();
-					// 动态添加路由：防止非首页刷新时跳转回首页的问题
-					// 确保 addRoute() 时动态添加的路由已经被完全加载上去
-					next({ ...to, replace: true });
-				} else {
-					// https://gitee.com/lyt-top/vue-next-admin/issues/I5F1HP
-					await initFrontEndControlRoutes();
-					next({ ...to, replace: true });
-				}
+				// 前端控制路由
+				// https://gitee.com/lyt-top/vue-next-admin/issues/I5F1HP
+				await initFrontEndControlRoutes();
+				next({ ...to, replace: true });
 			} else {
 				next();
 			}

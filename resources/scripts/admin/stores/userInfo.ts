@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import Cookies from 'js-cookie';
 import { UserInfosStates } from './interface';
 import { Session } from '@admin/utils/storage';
-
+import { permissionApi } from '@admin/api/permission';
 /**
  * 用户信息
  * @methods setUserInfos 设置用户信息
@@ -13,8 +13,7 @@ export const useUserInfo = defineStore('userInfo', {
 			userName: '',
 			photo: '',
 			time: 0,
-			roles: [],
-			authBtnList: [],
+			authList: [],
 		},
 	}),
 	actions: {
@@ -31,39 +30,20 @@ export const useUserInfo = defineStore('userInfo', {
 		// https://gitee.com/lyt-top/vue-next-admin/issues/I5F1HP
 		async getApiUserInfo() {
 			return new Promise((resolve) => {
-				setTimeout(() => {
-					// 模拟数据，请求接口时，记得删除多余代码及对应依赖的引入
+
+				permissionApi().getPermissionList().then((res?) => {
 					const userName = Cookies.get('userName');
 					const avatar = Cookies.get('avatar');
-					// 模拟数据
-					let defaultRoles: Array<string> = [];
-					let defaultAuthBtnList: Array<string> = [];
-					// admin 页面权限标识，对应路由 meta.roles，用于控制路由的显示/隐藏
-					let adminRoles: Array<string> = ['admin'];
-					// admin 按钮权限标识
-					let adminAuthBtnList: Array<string> = ['btn.add', 'btn.del', 'btn.edit', 'btn.link'];
-					// test 页面权限标识，对应路由 meta.roles，用于控制路由的显示/隐藏
-					let testRoles: Array<string> = ['common'];
-					// test 按钮权限标识
-					let testAuthBtnList: Array<string> = ['btn.add', 'btn.link'];
-					// 不同用户模拟不同的用户权限
-					if (userName === 'admin') {
-						defaultRoles = adminRoles;
-						defaultAuthBtnList = adminAuthBtnList;
-					} else {
-						defaultRoles = testRoles;
-						defaultAuthBtnList = testAuthBtnList;
-					}
+					let authList: Array<string> = res.data[0] === '*' ? res?.data[0] : res?.data || [];
 					// 用户信息
 					const userInfos = {
 						userName: userName,
 						photo: avatar,
 						time: new Date().getTime(),
-						roles: defaultRoles,
-						authBtnList: defaultAuthBtnList,
+						authList: authList,
 					};
 					resolve(userInfos);
-				}, 3000);
+				})
 			});
 		},
 	},

@@ -120,12 +120,6 @@ export const useThemeConfig = defineStore('themeConfig', {
 			layout: 'defaults',
 
 			/**
-			 * 后端控制路由
-			 */
-			// 是否开启后端控制路由
-			isRequestRoutes: false,
-
-			/**
 			 * 全局网站标题 / 副标题
 			 */
 			// 网站主标题（菜单导航、浏览器当前网页标题）

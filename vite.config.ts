@@ -10,8 +10,11 @@ let host = loadEnv('', './', 'APP_URL')
     .replace('http://', '');
 
 function detectServerConfig(host: string) {
-    let keyPath = resolve(homedir(), loadEnv('', './', 'VITE_KEY_PATH').VITE_KEY_PATH)
-    let certificatePath = resolve(homedir(), loadEnv('', './', 'VITE_CERT_PATH').VITE_CERT_PATH)
+    // env 未配置密钥地址时会报错，所以给了个不需要真的存在的默认值
+    let key = loadEnv('', './', 'VITE_KEY_PATH').VITE_KEY_PATH || 'mock/mock.key';
+    let cert = loadEnv('', './', 'VITE_CERT_PATH').VITE_CERT_PATH || 'mock/mock.crt';
+    let keyPath = resolve(homedir(), key)
+    let certificatePath = resolve(homedir(), cert)
 
     if (!fs.existsSync(keyPath)) {
         return {}

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Filters\AdminFilter;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Sanctum\NewAccessToken;
@@ -13,7 +15,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class Admin extends Authenticatable
 {
-    use HasFactory, SoftDeletes, HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory, SoftDeletes, HasFactory, Notifiable, HasRoles, HasApiTokens, AdminFilter;
 
     protected $fillable = [
         'name',
@@ -21,7 +23,7 @@ class Admin extends Authenticatable
         'phone',
         'avatar',
         'password',
-        'status'
+        'status',
     ];
 
     protected $hidden = [
@@ -33,6 +35,14 @@ class Admin extends Authenticatable
 
     const STATUS_ENABLED = 'enabled';
     const STATUS_DISABLED = 'disabled';
+
+
+
+
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return Carbon::instance($date)->toDateTimeString();
+    }
 
     public function isDisabled(): bool
     {
@@ -68,4 +78,23 @@ class Admin extends Authenticatable
         return $this->getAttribute('phone');
     }
 
+    public function isSuper(): bool
+    {
+        $roleIds = Role::query()->where('is_super', '=', 1)
+            ->get(['id'])->pluck('id')->toArray();
+        return $this->hasAnyRole($roleIds);
+    }
+
+    public function getRoleIds(): \Illuminate\Support\Collection
+    {
+        return $this->roles->pluck('id');
+    }
+
+    public static function create($data): \Illuminate\Database\Eloquent\Model|Admin|\Illuminate\Database\Eloquent\Builder
+    {
+        $data['password'] = $data['password'] ?? bcrypt('abc123');
+        return self::query()->firstOrCreate([
+            'phone' => $data['phone']
+        ],$data);
+    }
 }

@@ -3,8 +3,9 @@ export default {
 	router: {
 		home: '首頁',
 		system: '系統設置',
-		systemMenu: '選單管理',
-		systemRole: '角色管理',
+		admin: '管理員管理',
+		role: '角色管理',
+		password: '修改密碼',
 		systemUser: '用戶管理',
 		systemDept: '部門管理',
 		systemDic: '字典管理',

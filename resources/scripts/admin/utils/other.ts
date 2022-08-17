@@ -54,10 +54,12 @@ export function setTagsViewNameI18n(item: any) {
 		if (/\/zh-cn|en|zh-tw\//.test(query?.tagsViewName) || /\/(zh-cn|en|zh-tw)\//.test(params?.tagsViewName)) {
 			// 国际化
 			const urlTagsParams = (query?.tagsViewName && JSON.parse(query?.tagsViewName)) || (params?.tagsViewName && JSON.parse(params?.tagsViewName));
+			// @ts-ignore
 			tagsViewName = urlTagsParams[i18n.global.locale];
 		} else {
 			// 非国际化
 			tagsViewName = query?.tagsViewName || params?.tagsViewName;
+
 		}
 	} else {
 		// 非自定义 tagsView 名称

@@ -26,6 +26,7 @@ class CreatePermissionTables extends Migration
         }
 
         Schema::create($tableNames['permissions'], function (Blueprint $table) {
+            $table->comment('权限表');
             $table->bigIncrements('id'); // permission id
             $table->string('name');       // For MySQL 8.0 use string('name', 125);
             $table->string('guard_name'); // For MySQL 8.0 use string('guard_name', 125);
@@ -35,6 +36,7 @@ class CreatePermissionTables extends Migration
         });
 
         Schema::create($tableNames['roles'], function (Blueprint $table) use ($teams, $columnNames) {
+            $table->comment('角色表');
             $table->bigIncrements('id'); // role id
             if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
                 $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
@@ -51,6 +53,7 @@ class CreatePermissionTables extends Migration
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames, $columnNames, $teams) {
+            $table->comment('管理员直属权限表表');
             $table->unsignedBigInteger(PermissionRegistrar::$pivotPermission);
 
             $table->string('model_type');
@@ -75,6 +78,7 @@ class CreatePermissionTables extends Migration
         });
 
         Schema::create($tableNames['model_has_roles'], function (Blueprint $table) use ($tableNames, $columnNames, $teams) {
+            $table->comment('管理员与角色关联表');
             $table->unsignedBigInteger(PermissionRegistrar::$pivotRole);
 
             $table->string('model_type');
@@ -98,6 +102,7 @@ class CreatePermissionTables extends Migration
         });
 
         Schema::create($tableNames['role_has_permissions'], function (Blueprint $table) use ($tableNames) {
+            $table->comment('角色与权限关联表');
             $table->unsignedBigInteger(PermissionRegistrar::$pivotPermission);
             $table->unsignedBigInteger(PermissionRegistrar::$pivotRole);
 

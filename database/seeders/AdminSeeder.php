@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Admin;
+use App\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class AdminSeeder extends Seeder
 {
@@ -30,7 +30,8 @@ class AdminSeeder extends Seeder
 
         $role = Role::create([
             'name' => '超级管理员',
-            'guard_name' => 'custom'
+            'guard_name' => 'custom',
+            'is_super' => true
         ]);
 
         $admin->assignRole($role);

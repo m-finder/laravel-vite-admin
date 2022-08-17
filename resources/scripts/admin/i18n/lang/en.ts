@@ -3,8 +3,9 @@ export default {
 	router: {
 		home: 'home',
 		system: 'system',
-		systemMenu: 'systemMenu',
-		systemRole: 'systemRole',
+		admin: 'admin',
+		role: 'role',
+		password: 'reset password',
 		systemUser: 'systemUser',
 		systemDept: 'systemDept',
 		systemDic: 'systemDic',

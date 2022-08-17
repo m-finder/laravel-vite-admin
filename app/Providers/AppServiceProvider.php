@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\PersonalAccessToken;
+use App\Services\Paginator;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register(IdeHelperServiceProvider::class);
         }
+        $this->app->bind('Illuminate\Pagination\LengthAwarePaginator', function ($app, $options) {
+            return new Paginator(
+                $options['items'], $options['total'], $options['perPage'], $options['currentPage'], $options['options']
+            );
+        });
     }
 
     /**

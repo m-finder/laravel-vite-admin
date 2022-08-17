@@ -72,8 +72,8 @@ interface LoginMobileState {
 
 // 定义对象与类型
 const dataForm: LoginMobileState = {
-  account: 'admin',
-  password: 'abc23',
+  account: '',
+  password: '',
   captcha_key: '',
   captcha: '',
   is_password: true
@@ -142,19 +142,12 @@ export default defineComponent({
             // 存储 token 到浏览器缓存
             Session.set('token', res.data.token);
             // 用于 `/src/stores/userInfo.ts` 中不同用户登录判断（模拟数据）
+            Cookies.set('userId', res.data.admin.id);
             Cookies.set('userName', res.data.admin.name);
             Cookies.set('avatar', res.data.admin.avatar || logo);
-            if (!themeConfig.value.isRequestRoutes) {
-              // 前端控制路由，2、请注意执行顺序
-              await initFrontEndControlRoutes();
-              signInSuccess();
-            } else {
-              // 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
-              // 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
-              await initBackEndControlRoutes();
-              // 执行完 initBackEndControlRoutes，再执行 signInSuccess
-              signInSuccess();
-            }
+            // 前端控制路由，2、请注意执行顺序
+            await initFrontEndControlRoutes();
+            signInSuccess();
           }).catch((err?) => {
             state.loading.signIn = false;
             proxy.$notify.error({

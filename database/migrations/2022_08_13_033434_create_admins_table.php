@@ -14,6 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('admins', function (Blueprint $table) {
+            $table->comment('后台管理员表');
             $table->id();
             $table->string('name')->comment('用户名');
             $table->string('email')->nullable()->default(null)->comment('管理员邮箱')->unique();

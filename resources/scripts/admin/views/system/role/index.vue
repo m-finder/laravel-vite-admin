@@ -1,164 +1,192 @@
 <template>
-	<div class="system-role-container">
-		<el-card shadow="hover">
-			<div class="system-user-search mb15">
-				<el-input size="default" placeholder="请输入角色名称" style="max-width: 180px"> </el-input>
-				<el-button size="default" type="primary" class="ml10">
-					<el-icon>
-						<ele-Search />
-					</el-icon>
-					查询
-				</el-button>
-				<el-button size="default" type="success" class="ml10" @click="onOpenAddRole">
-					<el-icon>
-						<ele-FolderAdd />
-					</el-icon>
-					新增角色
-				</el-button>
-			</div>
-			<el-table :data="tableData.data" style="width: 100%">
-				<el-table-column type="index" label="序号" width="60" />
-				<el-table-column prop="roleName" label="角色名称" show-overflow-tooltip></el-table-column>
-				<el-table-column prop="roleSign" label="角色标识" show-overflow-tooltip></el-table-column>
-				<el-table-column prop="sort" label="排序" show-overflow-tooltip></el-table-column>
-				<el-table-column prop="status" label="角色状态" show-overflow-tooltip>
-					<template #default="scope">
-						<el-tag type="success" v-if="scope.row.status">启用</el-tag>
-						<el-tag type="info" v-else>禁用</el-tag>
-					</template>
-				</el-table-column>
-				<el-table-column prop="describe" label="角色描述" show-overflow-tooltip></el-table-column>
-				<el-table-column prop="createTime" label="创建时间" show-overflow-tooltip></el-table-column>
-				<el-table-column label="操作" width="100">
-					<template #default="scope">
-						<el-button :disabled="scope.row.roleName === '超级管理员'" size="small" text type="primary" @click="onOpenEditRole(scope.row)"
-							>修改</el-button
-						>
-						<el-button :disabled="scope.row.roleName === '超级管理员'" size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
-					</template>
-				</el-table-column>
-			</el-table>
-			<el-pagination
-				@size-change="onHandleSizeChange"
-				@current-change="onHandleCurrentChange"
-				class="mt15"
-				:pager-count="5"
-				:page-sizes="[10, 20, 30]"
-				v-model:current-page="tableData.param.pageNum"
-				background
-				v-model:page-size="tableData.param.pageSize"
-				layout="total, sizes, prev, pager, next, jumper"
-				:total="tableData.total"
-			>
-			</el-pagination>
-		</el-card>
-		<AddRole ref="addRoleRef" />
-		<EditRole ref="editRoleRef" />
-	</div>
+  <div class="system-role-container">
+    <el-card shadow="hover">
+      <div class="system-user-search mb15">
+        <el-input size="default" v-model="tableData.param.name" placeholder="请输入角色名称" clearable style="max-width: 180px"/>
+        <el-button-group class="ml10">
+          <el-button size="mini" v-auth="'roles.index'" type="primary" @click="getList">
+            <el-icon>
+              <ele-Search/>
+            </el-icon>
+            查询
+          </el-button>
+          <el-button size="mini" v-auth="'roles.index'" type="success" @click="resetFilter">
+            <el-icon>
+              <ele-Close/>
+            </el-icon>
+            重置
+          </el-button>
+          <el-button size="mini" v-auth="'roles.store'" type="primary" @click="onOpenAddRole">
+            <el-icon>
+              <ele-FolderAdd/>
+            </el-icon>
+            添加
+          </el-button>
+        </el-button-group>
+      </div>
+
+      <el-table v-loading="tableData.loading" :data="tableData.data" style="width: 100%">
+        <el-table-column prop="id" label="ID" width="60"/>
+        <el-table-column prop="name" label="角色名称" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="brief" label="角色描述" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="is_super" label="角色类型" show-overflow-tooltip>
+          <template #default="scope">
+            <el-tag size="mini" type="success" v-if="scope.row.is_super">超管</el-tag>
+            <el-tag size="mini" type="info" v-else>普通</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="created_at" label="创建时间" show-overflow-tooltip></el-table-column>
+        <el-table-column label="操作" width="150">
+          <template #default="scope">
+            <el-button v-auth="'roles.update'" size="small" text type="primary" @click="onOpenEditRole(scope.row)">修改</el-button>
+            <el-button v-auth="'roles.auth'" size="small" text type="primary" @click="onOpenAuthRole(scope.row)">授权</el-button>
+            <el-button v-auth="'roles.destroy'" size="small" text type="danger" v-loading="deleteBtnLoading" @click="onRowDel(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="tableData.total>0" :total="tableData.total" :page.sync="tableData.param.page" :limit.sync="tableData.param.limit" @pagination="getList"/>
+    </el-card>
+    <AddRole ref="addRoleRef" @getList="getList"/>
+    <EditRole ref="editRoleRef" @getList="getList"/>
+    <AuthRole ref="authRoleRef" @getList="getList"/>
+  </div>
 </template>
 
 <script lang="ts">
-import { toRefs, reactive, onMounted, ref, defineComponent } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
+import {toRefs, reactive, onMounted, ref, defineComponent, getCurrentInstance} from 'vue';
+import {ElMessageBox} from 'element-plus';
 import AddRole from '@admin/views/system/role/component/addRole.vue';
 import EditRole from '@admin/views/system/role/component/editRole.vue';
+import AuthRole from '@admin/views/system/role/component/authRole.vue';
+import {roleApi} from "@admin/api/system/role";
+import Pagination from '@admin/components/pagination/index.vue';
 
 // 定义接口来定义对象的类型
 interface TableData {
-	roleName: string;
-	roleSign: string;
-	describe: string;
-	sort: number;
-	status: boolean;
-	createTime: string;
+  id: number;
+  name: string;
+  brief: string;
+  is_super: boolean;
+  created_at: string;
 }
+
+interface defaultFilter {
+  page: number;
+  limit: number;
+  name: string | undefined,
+}
+
 interface TableDataState {
-	tableData: {
-		data: Array<TableData>;
-		total: number;
-		loading: boolean;
-		param: {
-			pageNum: number;
-			pageSize: number;
-		};
-	};
+  tableData: {
+    data: Array<TableData>;
+    total: number;
+    loading: boolean;
+    param: defaultFilter;
+  };
+  deleteBtnLoading: boolean;
+}
+
+const defaultFilter: defaultFilter = {
+  page: 1,
+  limit: 15,
+  name: undefined,
 }
 
 export default defineComponent({
-	name: 'systemRole',
-	components: { AddRole, EditRole },
-	setup() {
-		const addRoleRef = ref();
-		const editRoleRef = ref();
-		const state = reactive<TableDataState>({
-			tableData: {
-				data: [],
-				total: 0,
-				loading: false,
-				param: {
-					pageNum: 1,
-					pageSize: 10,
-				},
-			},
-		});
-		// 初始化表格数据
-		const initTableData = () => {
-			const data: Array<TableData> = [];
-			for (let i = 0; i < 2; i++) {
-				data.push({
-					roleName: i === 0 ? '超级管理员' : '普通用户',
-					roleSign: i === 0 ? 'admin' : 'common',
-					describe: `测试角色${i + 1}`,
-					sort: i,
-					status: true,
-					createTime: new Date().toLocaleString(),
-				});
-			}
-			state.tableData.data = data;
-			state.tableData.total = state.tableData.data.length;
-		};
-		// 打开新增角色弹窗
-		const onOpenAddRole = () => {
-			addRoleRef.value.openDialog();
-		};
-		// 打开修改角色弹窗
-		const onOpenEditRole = (row: Object) => {
-			editRoleRef.value.openDialog(row);
-		};
-		// 删除角色
-		const onRowDel = (row: any) => {
-			ElMessageBox.confirm(`此操作将永久删除角色名称：“${row.roleName}”，是否继续?`, '提示', {
-				confirmButtonText: '确认',
-				cancelButtonText: '取消',
-				type: 'warning',
-			})
-				.then(() => {
-					ElMessage.success('删除成功');
-				})
-				.catch(() => {});
-		};
-		// 分页改变
-		const onHandleSizeChange = (val: number) => {
-			state.tableData.param.pageSize = val;
-		};
-		// 分页改变
-		const onHandleCurrentChange = (val: number) => {
-			state.tableData.param.pageNum = val;
-		};
-		// 页面加载时
-		onMounted(() => {
-			initTableData();
-		});
-		return {
-			addRoleRef,
-			editRoleRef,
-			onOpenAddRole,
-			onOpenEditRole,
-			onRowDel,
-			onHandleSizeChange,
-			onHandleCurrentChange,
-			...toRefs(state),
-		};
-	},
+  name: 'systemRole',
+  components: {AddRole, EditRole, AuthRole, Pagination},
+  setup() {
+    const addRoleRef = ref();
+    const editRoleRef = ref();
+    const authRoleRef = ref();
+    const {proxy} = <any>getCurrentInstance();
+    const state = reactive<TableDataState>({
+      tableData: {
+        data: [],
+        total: 0,
+        loading: true,
+        param: Object.assign({}, defaultFilter),
+      },
+      deleteBtnLoading: false
+    });
+
+    onMounted(() => {
+      getList();
+    });
+
+    // 获取列表
+    const getList = () => {
+      state.tableData.loading = true
+      roleApi().getRoles(state.tableData.param).then((res?) => {
+        state.tableData.data = res.data.data
+        state.tableData.total = res.data.total
+        state.tableData.loading = false
+      }).catch((error?) => {
+        state.tableData.data = []
+        state.tableData.total = 0
+        state.tableData.loading = false
+      })
+    }
+    // 打开新增角色弹窗
+    const onOpenAddRole = () => {
+      addRoleRef.value.openDialog();
+    };
+    // 打开修改角色弹窗
+    const onOpenEditRole = (row: Object) => {
+      editRoleRef.value.openDialog(row);
+    };
+
+    const onOpenAuthRole = (row: Object) => {
+      authRoleRef.value.openDialog(row);
+    }
+    // 删除角色
+    const onRowDel = (row: any) => {
+      state.deleteBtnLoading = true
+      ElMessageBox.confirm(`此操作将永久删除角色名称：“${row.name}”，是否继续?`, '提示', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }).then(() => {
+        roleApi().deleteRole(row).then((res?) => {
+          state.deleteBtnLoading = false
+          proxy.$notify.success({
+            title: '成功',
+            message: '操作成功'
+          })
+          getList();
+        }).catch((err?) => {
+          state.deleteBtnLoading = false
+          proxy.$notify.error({
+            title: '错误',
+            message: err.msg
+          })
+        })
+      }).catch(() => {
+        proxy.$notify.info({
+          message: '取消操作'
+        })
+        state.deleteBtnLoading = false
+      });
+    };
+
+    // 重置检索
+    const resetFilter = () => {
+      state.tableData.param = Object.assign({}, defaultFilter)
+      getList()
+    }
+
+    return {
+      addRoleRef,
+      editRoleRef,
+      authRoleRef,
+      onOpenAddRole,
+      onOpenEditRole,
+      onOpenAuthRole,
+      onRowDel,
+      getList,
+      resetFilter,
+      ...toRefs(state),
+    };
+  },
 });
 </script>

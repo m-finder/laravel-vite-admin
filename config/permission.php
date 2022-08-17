@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Permission;
+use App\Models\Role;
+
 return [
 
     'models' => [
@@ -13,7 +16,7 @@ return [
          * `Spatie\Permission\Contracts\Permission` contract.
          */
 
-        'permission' => Spatie\Permission\Models\Permission::class,
+        'permission' => Permission::class,
 
         /*
          * When using the "HasRoles" trait from this package, we need to know which
@@ -24,7 +27,7 @@ return [
          * `Spatie\Permission\Contracts\Role` contract.
          */
 
-        'role' => Spatie\Permission\Models\Role::class,
+        'role' => Role::class,
 
     ],
 
@@ -158,4 +161,57 @@ return [
 
         'store' => 'default',
     ],
+
+    /**
+     * 自定义权限组
+     */
+    'groups' => [
+        'captcha' => '图形验证码',
+        'login' => '登录',
+        'homes' => '主页',
+        'admins' => '管理员',
+        'roles' => '角色',
+
+    ],
+
+    /**
+     * 自定义方法名
+     */
+    'methods' => [
+        'index' => '列表',
+        'update' => '更新',
+        'store' => '保存',
+        'show' => '详情',
+        'destroy' => '删除',
+        'list' => '下拉列表',
+        'upload' => '上传',
+        'download' => '下载',
+        'auth' => '授权',
+        'import' => '导入',
+        'reset' => '重置',
+        'code' => '验证码',
+        'refresh' => '刷新',
+        'unlock' => '解除锁定',
+        'send' => '发送',
+        'check' => '检查',
+    ],
+
+    /**
+     * 自定义白名单，添加后该接口不需要登陆校验
+     */
+    'white_list' => [
+        'login',
+        'captcha',
+        'sms.code',
+        'passwords.update',
+        'logout',
+        'files.upload',
+        'downloads.index',
+        'homes.index',
+        'permissions.index',
+        'notices.show',
+        'system.info',
+        'passwords.reset',
+        'passwords.update',
+    ]
 ];
